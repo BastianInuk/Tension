@@ -9,9 +9,8 @@
 
 int main(int, char **)
 {
-  WGPUInstanceDescriptor desc = {};
-  desc.nextInChain = nullptr;
-  auto instance = std::make_unique<Instance>(desc);
+  auto instance = std::make_unique<Instance>(WGPUInstanceDescriptor{
+      .nextInChain = nullptr});
 
   if (!instance->success())
   {
