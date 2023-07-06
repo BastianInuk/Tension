@@ -6,12 +6,14 @@
 #include <webgpu/webgpu.h>
 
 class Instance;
+class Surface;
 
 /**
  * @brief Managed GLFW Window
  *
  */
-class Window {
+class Window
+{
   GLFWwindow *window;
 
 public:
@@ -21,7 +23,7 @@ public:
 
   bool shouldClose();
 
-  WGPUSurface getSurface(const Instance &instance);
+  Surface getSurface(const Instance &instance);
 
   /**
    * @brief Wether or not the window initialised successfully
@@ -30,4 +32,6 @@ public:
    * @return false if not
    */
   bool success();
+
+  GLFWwindow *get() const;
 };
