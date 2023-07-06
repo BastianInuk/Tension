@@ -40,13 +40,8 @@ int main(int, char **)
   }
 
   const auto surface = window->getSurface(*instance);
-
-  // Adapter options: we need the adapter to draw to the window's surface
-  WGPURequestAdapterOptions adapterOpts = {};
-  adapterOpts.nextInChain = nullptr;
-  adapterOpts.compatibleSurface = surface.get();
-
-  auto adapter = instance->requestAdapter(adapterOpts);
+  const auto adapter = instance->requestAdapter({.nextInChain = nullptr,
+                                                 .compatibleSurface = surface.get()});
 
   adapter.inspect();
 
