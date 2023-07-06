@@ -3,6 +3,9 @@
 #include <GLFW/glfw3.h>
 #include <cstdint>
 #include <string>
+#include <webgpu/webgpu.h>
+
+class Instance;
 
 /**
  * @brief Managed GLFW Window
@@ -17,6 +20,8 @@ public:
   ~Window();
 
   bool shouldClose();
+
+  WGPUSurface getSurface(const Instance &instance);
 
   /**
    * @brief Wether or not the window initialised successfully

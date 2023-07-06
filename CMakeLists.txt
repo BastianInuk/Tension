@@ -6,17 +6,15 @@ project(
 )
 
 add_executable(App
-    src/glfw/window.h
-    src/glfw/window.cpp
-    src/webgpu/instance.h
-    src/webgpu/instance.cpp
-    src/webgpu/device.h
-    src/webgpu/device.cpp
+    src/wrappers/window.h
+    src/wrappers/window.cpp
+    src/wrappers/instance.h
+    src/wrappers/instance.cpp
     src/main.cpp
 )
 
 add_subdirectory(vendors)
-target_link_libraries(App PRIVATE glfw webgpu)
+target_link_libraries(App PRIVATE glfw webgpu glfw3webgpu)
 
 set_target_properties(App PROPERTIES
     CXX_STANDARD 20
