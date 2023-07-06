@@ -8,25 +8,26 @@ project(
 add_executable(App
     src/glfw/window.h
     src/glfw/window.cpp
+    src/webgpu/instance.h
+    src/webgpu/instance.cpp
+    src/webgpu/device.h
+    src/webgpu/device.cpp
     src/main.cpp
 )
 
 add_subdirectory(vendors)
-target_link_libraries(App PRIVATE glfw)
+target_link_libraries(App PRIVATE glfw webgpu)
 
 set_target_properties(App PROPERTIES
     CXX_STANDARD 20
     COMPILE_WARNING_AS_ERROR ON
 )
 
-if(MSVC)
-    target_compile_options(App PRIVATE /W4)
-else()
-    target_compile_options(App PRIVATE -Wall -Wextra -pedantic)
-endif()
+include(utils.cmake)
 
-if(XCODE)
-    set_target_properties(App PROPERTIES
-        XCODE_GENERATE_SCHEME ON
-        XCODE_SCHEME_ENABLE_GPU_FRAME_CAPTURE_MODE "Metal")
-endif()
+target_treat_all_warnings_as_errors(App)
+
+# The application's binary must find wgpu.dll or libwgpu.so at runtime,
+# so we automatically copy it (it's called WGPU_RUNTIME_LIB in general)
+# next to the binary.
+target_copy_webgpu_binaries(App)

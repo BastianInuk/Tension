@@ -13,7 +13,7 @@ class Window {
 
 public:
   Window(uint32_t width, uint32_t height, std::string title,
-         GLFWmonitor *monitor = NULL, GLFWwindow *share = NULL);
+         GLFWmonitor *monitor = nullptr, GLFWwindow *share = nullptr);
   ~Window();
 
   bool shouldClose();

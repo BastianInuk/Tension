@@ -1,10 +1,20 @@
 #include "glfw/window.h"
+#include "webgpu/instance.h"
 #include <GLFW/glfw3.h>
 #include <cstdint>
 #include <iostream>
 #include <memory>
 
 int main(int, char **) {
+
+  auto instance = std::make_unique<Instance>();
+
+  if (!instance->success()) {
+    return 1;
+  }
+
+  std::cout << "WGPU instance: " << instance << std::endl;
+
   if (!glfwInit()) {
     std::cerr << "Could not initialize GLFW!" << std::endl;
     return 1;
