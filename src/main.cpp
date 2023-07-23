@@ -2,6 +2,7 @@
 #include "wrappers/window.h"
 #include "wrappers/surface.h"
 #include "wrappers/adapter.h"
+#include "wrappers/device.h"
 #include <GLFW/glfw3.h>
 #include <cstdint>
 #include <iostream>
@@ -39,12 +40,16 @@ int main(int, char **)
   }
 
   const auto surface = window->getSurface(*instance);
-  const auto adapter = instance->requestAdapter({.nextInChain = nullptr,
-                                                 .compatibleSurface = surface.get()});
+  auto adapter = instance->requestAdapter({.nextInChain = nullptr,
+                                           .compatibleSurface = surface.get()});
 
   adapter.inspect();
 
   std::cout << "Got adapter: " << adapter.get() << std::endl;
+
+  const auto device = adapter.reqeustDevice({.label = "My Device",
+                                             .requiredFeaturesCount = 0,
+                                             .defaultQueue.label = "Default Queue"});
 
   while (!window->shouldClose())
   {

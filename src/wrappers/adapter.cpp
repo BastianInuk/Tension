@@ -1,5 +1,6 @@
 #include "adapter.h"
 #include "instance.h"
+#include "device.h"
 
 #include <cassert>
 #include <iostream>
@@ -125,4 +126,51 @@ void Adapter::inspect() const
 WGPUAdapter Adapter::get() const
 {
     return this->adapter;
+}
+
+std::shared_ptr<Device> Adapter::reqeustDevice(const WGPUDeviceDescriptor &descriptor)
+{
+    if (!this->device)
+    {
+        struct UserData
+        {
+            WGPUDevice device = nullptr;
+            bool requestEnded = false;
+        };
+        UserData userData;
+
+        auto onDeviceRequestEnded = [](WGPURequestDeviceStatus status, WGPUDevice device, char const *message, void *pUserData)
+        {
+            UserData &userData = *reinterpret_cast<UserData *>(pUserData);
+            if (status == WGPURequestDeviceStatus_Success)
+            {
+                userData.device = device;
+            }
+            else
+            {
+                std::cout << "Could not get WebGPU device: " << message << std::endl;
+            }
+            userData.requestEnded = true;
+        };
+
+        wgpuAdapterRequestDevice(
+            this->adapter,
+            &descriptor,
+            onDeviceRequestEnded,
+            (void *)&userData);
+
+        assert(userData.requestEnded);
+        this->device = std::make_shared<Device>(userData.device);
+
+        auto onDeviceError = [](WGPUErrorType type, char const *message, void * /* pUserData */)
+        {
+            std::cout << "Uncaptured device error: type " << type;
+            if (message)
+                std::cout << " (" << message << ")";
+            std::cout << std::endl;
+        };
+        wgpuDeviceSetUncapturedErrorCallback(this->device->get(), onDeviceError, nullptr /* pUserData */);
+    }
+
+    return this->device;
 }

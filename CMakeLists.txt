@@ -12,6 +12,8 @@ add_executable(App
     src/wrappers/instance.cpp
     src/wrappers/adapter.h
     src/wrappers/adapter.cpp
+    src/wrappers/device.h
+    src/wrappers/device.cpp
     src/wrappers/surface.h
     src/wrappers/surface.cpp
     src/main.cpp
