@@ -1,16 +1,27 @@
 #include "device.h"
 
-Device::Device(WGPUDevice device)
-    : device(device)
-{
+#include "encoder.h"
+
+Device::Device(WGPUDevice device) : device(device) {}
+
+Device::~Device() { wgpuDeviceRelease(this->device); }
+
+WGPUDevice Device::get() const { return this->device; }
+
+CommandQueue Device::getQueue() {
+  if (!this->commandQueue) {
+    this->commandQueue = wgpuDeviceGetQueue(this->device);
+  }
+
+  return this->commandQueue.value();
 }
 
-Device::~Device()
-{
-    wgpuDeviceRelease(this->device);
+Encoder Device::createEncoder(const WGPUCommandEncoderDescriptor &encoderDesc) {
+  return wgpuDeviceCreateCommandEncoder(this->device, &encoderDesc);
 }
 
-WGPUDevice Device::get() const
-{
-    return this->device;
+WGPUSwapChain
+Device::createSwapChain(const Surface &surface,
+                        const WGPUSwapChainDescriptor &descriptor) {
+  return wgpuDeviceCreateSwapChain(this->device, surface.get(), &descriptor);
 }
