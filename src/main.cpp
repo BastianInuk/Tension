@@ -29,8 +29,7 @@ int main(int, char **) {
   // We ask GLFW not to set up any graphics API, we'll do it manually
   glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
-  auto window = std::make_unique<Window>(
-      640, 480, "It compiles, but CMake and VSCode is just being a lil' bitch");
+  auto window = std::make_unique<Window>(640, 480, "Window");
 
   if (!window->success()) {
     std::cerr << "Could not open window!" << std::endl;
