@@ -6,20 +6,6 @@ project(
 )
 
 add_executable(App
-    src/wrappers/window.h
-    src/wrappers/window.cpp
-    src/wrappers/instance.h
-    src/wrappers/instance.cpp
-    src/wrappers/adapter.h
-    src/wrappers/adapter.cpp
-    src/wrappers/device.h
-    src/wrappers/device.cpp
-    src/wrappers/command_queue.h
-    src/wrappers/command_queue.cpp
-    src/wrappers/encoder.h
-    src/wrappers/encoder.cpp
-    src/wrappers/surface.h
-    src/wrappers/surface.cpp
     src/main.cpp
 )
 

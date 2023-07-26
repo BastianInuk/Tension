@@ -1,4 +1,4 @@
-#include "GLFW/glfw3.h"
+#include <GLFW/glfw3.h>
 #include <cstdint>
 #include <functional>
 #include <glfw3webgpu.h>
