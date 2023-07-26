@@ -1,21 +1,18 @@
-#include "wrappers/adapter.h"
-#include "wrappers/command_queue.h"
-#include "wrappers/device.h"
-#include "wrappers/instance.h"
-#include "wrappers/surface.h"
-#include "wrappers/window.h"
-#include <GLFW/glfw3.h>
+#include "GLFW/glfw3.h"
 #include <cstdint>
 #include <functional>
+#include <glfw3webgpu.h>
 #include <iostream>
 #include <memory>
 #include <vector>
-#include <webgpu/webgpu.h>
+
+#define WEBGPU_CPP_IMPLEMENTATION
+#include <webgpu/webgpu.hpp>
 
 int main(int, char **) {
-  auto instance = std::make_unique<Instance>(WGPUInstanceDescriptor{});
+  auto instance = wgpu::createInstance(wgpu::InstanceDescriptor{});
 
-  if (!instance->success()) {
+  if (!instance) {
     return 1;
   }
 
@@ -29,78 +26,78 @@ int main(int, char **) {
   // We ask GLFW not to set up any graphics API, we'll do it manually
   glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
-  auto window = std::make_unique<Window>(640, 480, "Window");
+  GLFWwindow *window = glfwCreateWindow(640, 480, "Learn WebGPU", NULL, NULL);
 
-  if (!window->success()) {
+  if (!window) {
     std::cerr << "Could not open window!" << std::endl;
     glfwTerminate();
     return 1;
   }
 
-  const auto surface = window->getSurface(*instance);
-  auto adapter = instance->requestAdapter(
-      {.nextInChain = nullptr, .compatibleSurface = surface.get()});
+  wgpu::Surface surface = glfwGetWGPUSurface(instance, window);
+  wgpu::RequestAdapterOptions requestAdapterOptions{};
+  requestAdapterOptions.compatibleSurface = surface;
+  auto adapter = instance.requestAdapter(requestAdapterOptions);
+  std::cout << "Got adapter: " << adapter << std::endl;
 
-  adapter.inspect();
+  wgpu::DeviceDescriptor deviceDescriptor{};
+  deviceDescriptor.label = "My Device";
+  deviceDescriptor.requiredFeaturesCount = 0;
+  deviceDescriptor.defaultQueue.label = "Default Queue";
+  auto device = adapter.requestDevice(deviceDescriptor);
 
-  std::cout << "Got adapter: " << adapter.get() << std::endl;
+  auto queue = device.getQueue();
 
-  auto device = adapter.reqeustDevice({.label = "My Device",
-                                       .requiredFeaturesCount = 0,
-                                       .defaultQueue.label = "Default Queue"});
+  const auto swapChainFormat = surface.getPreferredFormat(adapter);
 
-  auto queue = device->getQueue();
+  wgpu::SwapChainDescriptor swapChainDesc = {};
+  swapChainDesc.width = 640;
+  swapChainDesc.height = 480;
+  swapChainDesc.usage = wgpu::TextureUsage::RenderAttachment;
+  swapChainDesc.format = swapChainFormat;
+  swapChainDesc.presentMode = wgpu::PresentMode::Fifo;
 
-  const auto swapchainFormat = surface.preferredFormatFor(adapter);
+  auto swapChain = device.createSwapChain(surface, swapChainDesc);
 
-  const auto swapChain = device->createSwapChain(
-      surface, {
-                   // TODO: resize on resize
-                   .width = 640,
-                   .height = 480,
-                   .format = swapchainFormat,
-                   .usage = WGPUTextureUsage_RenderAttachment,
-                   .presentMode = WGPUPresentMode_Fifo,
-               });
-
-  while (!window->shouldClose()) {
+  while (!glfwWindowShouldClose(window)) {
     // Check whether the user clicked on the close button (and any other
     // mouse/key event, which we don't use so far)
     glfwPollEvents();
 
-    WGPUTextureView nextTexture = wgpuSwapChainGetCurrentTextureView(swapChain);
-    std::cout << "nextTexture: " << nextTexture << std::endl;
+    wgpu::TextureView nextTexture = swapChain.getCurrentTextureView();
 
-    WGPURenderPassColorAttachment renderPassColorAttachment = {};
+    wgpu::CommandEncoderDescriptor commandEncoderDesc{};
+    commandEncoderDesc.label = "Command Encoder";
+    auto encoder = device.createCommandEncoder(commandEncoderDesc);
 
+    wgpu::RenderPassDescriptor renderPassDesc{};
+
+    WGPURenderPassColorAttachment renderPassColorAttachment{};
     renderPassColorAttachment.view = nextTexture;
-    renderPassColorAttachment.loadOp = WGPULoadOp_Clear;
-    renderPassColorAttachment.storeOp = WGPUStoreOp_Store;
-    renderPassColorAttachment.clearValue = WGPUColor{0.9, 0.1, 0.2, 1.0};
+    renderPassColorAttachment.resolveTarget = nullptr;
+    renderPassColorAttachment.loadOp = wgpu::LoadOp::Clear;
+    renderPassColorAttachment.storeOp = wgpu::StoreOp::Store;
+    renderPassColorAttachment.clearValue = wgpu::Color{0.9, 0.1, 0.2, 1.0};
+    renderPassDesc.colorAttachmentCount = 1;
+    renderPassDesc.colorAttachments = &renderPassColorAttachment;
 
-    auto encoder = device->createEncoder({.label = "My command encoder"});
+    renderPassDesc.depthStencilAttachment = nullptr;
+    renderPassDesc.timestampWriteCount = 0;
 
-    encoder.insertDebugMark("Do one thing");
-    encoder.insertDebugMark("Do another thing");
+    auto renderPass = encoder.beginRenderPass(renderPassDesc);
+    renderPass.end();
 
-    WGPURenderPassEncoder renderPass =
-        encoder.renderPassBegin({.colorAttachmentCount = 1,
-                                 .colorAttachments = &renderPassColorAttachment,
-                                 .timestampWriteCount = 0});
-    wgpuRenderPassEncoderEnd(renderPass);
+    nextTexture.release();
 
-    wgpuTextureViewRelease(nextTexture);
+    wgpu::CommandBufferDescriptor cmdBufferDescriptor{};
+    cmdBufferDescriptor.label = "Command buffer";
+    auto command = encoder.finish(cmdBufferDescriptor);
+    queue.submit(command);
 
-    std::cout << "Submitting command..." << std::endl;
-
-    WGPUCommandBuffer command = encoder.finish({.label = "Command buffer"});
-    queue.submit({command});
-
-    wgpuSwapChainPresent(swapChain);
+    swapChain.present();
   }
 
-  // TODO: make class so it auto release
-  wgpuSwapChainRelease(swapChain);
+  glfwDestroyWindow(window);
   glfwTerminate();
   return 0;
 }
