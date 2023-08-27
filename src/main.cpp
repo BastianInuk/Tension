@@ -37,8 +37,12 @@ int main(int, char **) {
   }
 
   wgpu::Surface surface = glfwGetWGPUSurface(instance, window);
-  wgpu::RequestAdapterOptions requestAdapterOptions{};
-  requestAdapterOptions.compatibleSurface = surface;
+
+  const wgpu::RequestAdapterOptions requestAdapterOptions =
+      WGPURequestAdapterOptions{
+          .compatibleSurface = surface,
+      };
+
   auto adapter = instance.requestAdapter(requestAdapterOptions);
   std::cout << "Got adapter: " << adapter << std::endl;
 
@@ -73,7 +77,7 @@ int main(int, char **) {
     commandEncoderDesc.label = "Command Encoder";
     auto encoder = device.createCommandEncoder(commandEncoderDesc);
 
-    WGPURenderPassColorAttachment renderPassColorAttachment{
+    const WGPURenderPassColorAttachment renderPassColorAttachment{
         .view = nextTexture,
         .resolveTarget = nullptr,
         .loadOp = wgpu::LoadOp::Clear,
@@ -81,7 +85,7 @@ int main(int, char **) {
         .clearValue = wgpu::Color{0.9, 0.1, 0.2, 1.0},
     };
 
-    wgpu::RenderPassDescriptor renderPassDesc = WGPURenderPassDescriptor{
+    const wgpu::RenderPassDescriptor renderPassDesc = WGPURenderPassDescriptor{
         .colorAttachmentCount = 1,
         .colorAttachments = &renderPassColorAttachment,
         .depthStencilAttachment = nullptr,
