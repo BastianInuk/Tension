@@ -5,6 +5,7 @@
 #include <iostream>
 #include <memory>
 #include <vector>
+#include <webgpu/webgpu.h>
 
 #define WEBGPU_CPP_IMPLEMENTATION
 #include <webgpu/webgpu.hpp>
@@ -26,7 +27,8 @@ int main(int, char **) {
   // We ask GLFW not to set up any graphics API, we'll do it manually
   glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
-  GLFWwindow *window = glfwCreateWindow(640, 480, "Learn WebGPU", NULL, NULL);
+  GLFWwindow *window =
+      glfwCreateWindow(640, 480, "FLECS on these WINDOWS", NULL, NULL);
 
   if (!window) {
     std::cerr << "Could not open window!" << std::endl;
@@ -40,23 +42,24 @@ int main(int, char **) {
   auto adapter = instance.requestAdapter(requestAdapterOptions);
   std::cout << "Got adapter: " << adapter << std::endl;
 
-  wgpu::DeviceDescriptor deviceDescriptor{};
-  deviceDescriptor.label = "My Device";
-  deviceDescriptor.requiredFeaturesCount = 0;
-  deviceDescriptor.defaultQueue.label = "Default Queue";
+  const wgpu::DeviceDescriptor deviceDescriptor = WGPUDeviceDescriptor{
+      .label = "My Device",
+      .requiredFeaturesCount = 0,
+      .defaultQueue.label = "Default Queue",
+  };
   auto device = adapter.requestDevice(deviceDescriptor);
 
   auto queue = device.getQueue();
 
   const auto swapChainFormat = surface.getPreferredFormat(adapter);
 
-  wgpu::SwapChainDescriptor swapChainDesc = {};
-  swapChainDesc.width = 640;
-  swapChainDesc.height = 480;
-  swapChainDesc.usage = wgpu::TextureUsage::RenderAttachment;
-  swapChainDesc.format = swapChainFormat;
-  swapChainDesc.presentMode = wgpu::PresentMode::Fifo;
-
+  const wgpu::SwapChainDescriptor swapChainDesc = WGPUSwapChainDescriptor{
+      .width = 640,
+      .height = 480,
+      .usage = wgpu::TextureUsage::RenderAttachment,
+      .format = swapChainFormat,
+      .presentMode = wgpu::PresentMode::Fifo,
+  };
   auto swapChain = device.createSwapChain(surface, swapChainDesc);
 
   while (!glfwWindowShouldClose(window)) {
@@ -70,19 +73,20 @@ int main(int, char **) {
     commandEncoderDesc.label = "Command Encoder";
     auto encoder = device.createCommandEncoder(commandEncoderDesc);
 
-    wgpu::RenderPassDescriptor renderPassDesc{};
+    WGPURenderPassColorAttachment renderPassColorAttachment{
+        .view = nextTexture,
+        .resolveTarget = nullptr,
+        .loadOp = wgpu::LoadOp::Clear,
+        .storeOp = wgpu::StoreOp::Store,
+        .clearValue = wgpu::Color{0.9, 0.1, 0.2, 1.0},
+    };
 
-    WGPURenderPassColorAttachment renderPassColorAttachment{};
-    renderPassColorAttachment.view = nextTexture;
-    renderPassColorAttachment.resolveTarget = nullptr;
-    renderPassColorAttachment.loadOp = wgpu::LoadOp::Clear;
-    renderPassColorAttachment.storeOp = wgpu::StoreOp::Store;
-    renderPassColorAttachment.clearValue = wgpu::Color{0.9, 0.1, 0.2, 1.0};
-    renderPassDesc.colorAttachmentCount = 1;
-    renderPassDesc.colorAttachments = &renderPassColorAttachment;
-
-    renderPassDesc.depthStencilAttachment = nullptr;
-    renderPassDesc.timestampWriteCount = 0;
+    wgpu::RenderPassDescriptor renderPassDesc = WGPURenderPassDescriptor{
+        .colorAttachmentCount = 1,
+        .colorAttachments = &renderPassColorAttachment,
+        .depthStencilAttachment = nullptr,
+        .timestampWriteCount = 0,
+    };
 
     auto renderPass = encoder.beginRenderPass(renderPassDesc);
     renderPass.end();

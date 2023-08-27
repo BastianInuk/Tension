@@ -1,6 +1,6 @@
 include(FetchContent)
 
-set(WEBGPU_BACKEND "WGPU" CACHE STRING "Backend implementation of WebGPU. Possible values are WGPU and DAWN (it does not matter when using emcmake)")
+set(WEBGPU_BACKEND "DAWN" CACHE STRING "Backend implementation of WebGPU. Possible values are WGPU and DAWN (it does not matter when using emcmake)")
 
 if(NOT TARGET webgpu)
     string(TOUPPER ${WEBGPU_BACKEND} WEBGPU_BACKEND_U)
