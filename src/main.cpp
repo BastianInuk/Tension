@@ -5,7 +5,6 @@
 #include <iostream>
 #include <memory>
 #include <vector>
-#include <webgpu/webgpu.h>
 
 #define WEBGPU_CPP_IMPLEMENTATION
 #include <webgpu/webgpu.hpp>
@@ -55,7 +54,7 @@ int main(int, char **) {
 
   auto queue = device.getQueue();
 
-  const auto swapChainFormat = surface.getPreferredFormat(adapter);
+  const auto swapChainFormat = WGPUTextureFormat_BGRA8Unorm;
 
   const wgpu::SwapChainDescriptor swapChainDesc = WGPUSwapChainDescriptor{
       .width = 640,
