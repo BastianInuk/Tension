@@ -27,7 +27,7 @@ int main(int, char **) {
   glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
   GLFWwindow *window =
-      glfwCreateWindow(640, 480, "FLECS on these WINDOWS", NULL, NULL);
+      glfwCreateWindow(640, 480, "FLECS on these TENSIONS", NULL, NULL);
 
   if (!window) {
     std::cerr << "Could not open window!" << std::endl;
@@ -81,7 +81,7 @@ int main(int, char **) {
         .resolveTarget = nullptr,
         .loadOp = wgpu::LoadOp::Clear,
         .storeOp = wgpu::StoreOp::Store,
-        .clearValue = wgpu::Color{0.9, 0.1, 0.2, 1.0},
+        .clearValue = wgpu::Color{1, 0.15, 0.55, 1.0},
     };
 
     const wgpu::RenderPassDescriptor renderPassDesc = WGPURenderPassDescriptor{
